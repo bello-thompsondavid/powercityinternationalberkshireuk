@@ -494,7 +494,7 @@
                         </div>
                     </div>
                 </div>
-                <form class="contact-form fade-in from-right" id="contact-form" action="https://formspree.io/f/movwaorv" method="POST">
+                <form class="contact-form fade-in from-right" id="contact-form" action="https://core.hisend.hunnovate.com/api/v1/projects/01jxjcax2h9jq7hk66th9ms351/tables/contact_form/records?api_key=dev_OvFaf7sFv9Np5LMty7AAD9UR" method="POST">
                     <div class="form-group">
                         <label for="name"><i class="fas fa-user"></i>Your Name</label>
                         <input type="text" id="name" name="name" placeholder="Enter your name" required>
@@ -798,6 +798,15 @@
             });
 
             if (response.ok) {
+                
+                fetch('https://formspree.io/f/movwaorv', {
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json'
+                },
+                body: formData
+            });
+
                 showNotification('Thank you for your message! We\'ll get back to you soon.', 'success');
                 contactForm.reset();
             } else {

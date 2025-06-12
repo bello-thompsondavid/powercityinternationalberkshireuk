@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Messages Viewer</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --primary-light: #e8f0fe;
+            --primary-dark: #0d47a1;
+            --text-color: #202124;
+            --text-light: #5f6368;
+            --border-color: #dadce0;
+            --white: #ffffff;
+            --background: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .messages-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .messages-table th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 500;
+        }
+
+        .messages-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .messages-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .messages-table tr:hover {
+            background-color: var(--primary-light);
+            cursor: pointer;
+        }
+
+        .message-subject {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .message-name {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .message-email {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .message-preview {
+            color: var(--text-light);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination-button {
+            padding: 8px 16px;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-button:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .per-page-select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--white);
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .message-detail {
+            margin-bottom: 16px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: var(--text-color);
+            padding: 8px 0;
+            word-break: break-word;
+        }
+
+        .email-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-email {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .copy-email:hover {
+            background-color: #d2e3fc;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--primary-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .search-container {
+                width: 100%;
+            }
+
+            .messages-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .message-preview {
+                max-width: 200px;
+            }
+        }
+
+        /* Header Bar Styles */
+        .dashboard-header {
+            background-color: var(--primary-dark);
+            color: var(--white);
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* Logout Button Styles */
+        .logout-button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-button:hover {
+            background-color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header Bar -->
+    <div class="dashboard-header">
+        PowerCity International Berkshire UK - Dashboard
+    </div>
+    <div class="container">
+        <header>
+            <h1>Contact Messages</h1>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search messages..." id="searchInput">
+            </div>
+            <button class="logout-button" id="logoutButton">Logout</button>
+        </header>
+
+        <div class="table-container">
+            <table class="messages-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody id="messagesTableBody">
+                    <tr>
+                        <td colspan="4" class="loading">
+                            <div class="spinner"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <div class="pagination-info" id="paginationInfo">Loading...</div>
+            <div class="pagination-controls">
+                <select class="per-page-select" id="perPageSelect">
+                    <option value="1">1 per page</option>
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </select>
+                <button class="pagination-button" id="prevButton" disabled>Previous</button>
+                <button class="pagination-button" id="nextButton" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Detail Modal -->
+    <div class="modal" id="messageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Message Details</div>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Configuration
+        const config = {
+            apiEndpoint: 'https://core.hisend.hunnovate.com/api/v1/projects/01jxjcax2h9jq7hk66th9ms351/tables/contact_form/records?api_key=dev_OvFaf7sFv9Np5LMty7AAD9UR', // Placeholder endpoint
+            debounceTime: 300, // milliseconds
+            defaultPerPage: 20
+        };
+
+        // State
+        let state = {
+            messages: [],
+            currentPage: 1,
+            perPage: config.defaultPerPage,
+            totalMessages: 2,
+            searchQuery: '',
+            loading: true
+        };
+
+        // DOM Elements
+        const elements = {
+            tableBody: document.getElementById('messagesTableBody'),
+            paginationInfo: document.getElementById('paginationInfo'),
+            prevButton: document.getElementById('prevButton'),
+            nextButton: document.getElementById('nextButton'),
+            perPageSelect: document.getElementById('perPageSelect'),
+            searchInput: document.getElementById('searchInput'),
+            messageModal: document.getElementById('messageModal'),
+            modalClose: document.getElementById('modalClose'),
+            modalBody: document.getElementById('modalBody')
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            fetchMessages();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Pagination controls
+            elements.prevButton.addEventListener('click', () => {
+                if (state.currentPage > 1) {
+                    state.currentPage--;
+                    fetchMessages();
+                }
+            });
+
+            elements.nextButton.addEventListener('click', () => {
+                if (state.currentPage < Math.ceil(state.totalMessages / state.perPage)) {
+                    state.currentPage++;
+                    fetchMessages();
+                }
+            });
+
+            // Per page select
+            elements.perPageSelect.addEventListener('change', (e) => {
+                state.perPage = parseInt(e.target.value);
+                state.currentPage = 1; // Reset to first page when changing items per page
+                fetchMessages();
+            });
+
+            // Search with debounce
+            let debounceTimer;
+            elements.searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    state.searchQuery = e.target.value.trim();
+                    state.currentPage = 1; // Reset to first page when searching
+                    fetchMessages();
+                }, config.debounceTime);
+            });
+
+            // Modal close
+            elements.modalClose.addEventListener('click', () => {
+                elements.messageModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === elements.messageModal) {
+                    elements.messageModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Fetch messages from API
+        function fetchMessages() {
+            state.loading = true;
+            updateLoadingState();
+
+            const params = {
+                page: state.currentPage,
+                per_page: state.perPage,
+                search: state.searchQuery
+            };
+
+            axios.get(config.apiEndpoint, { params })
+                .then(response => {
+                    // Assuming API returns { data: [], total: number }
+                    state.messages = response.data.data || [];
+                    state.totalMessages = response.data.meta.total || 0;
+                    renderMessages();
+                    updatePagination();
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                    renderError();
+                })
+                .finally(() => {
+                    state.loading = false;
+                    updateLoadingState();
+                });
+        }
+
+        // Render messages to table
+        function renderMessages() {
+            if (state.messages.length === 0) {
+                elements.tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            No messages found. ${state.searchQuery ? 'Try a different search.' : ''}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            elements.tableBody.innerHTML = state.messages.map(message => `
+                <tr data-id="${message.id}">
+                    <td>
+                        <div class="message-name">${message.name || 'No name'}</div>
+                    </td>
+                    <td>
+                        <div class="message-email">${message.email || 'No email'}</div>
+                    </td>
+                    <td>
+                        <div class="message-subject">${message.subject || 'No subject'}</div>
+                    </td>
+                    <td>
+                        <div class="message-preview">${message.message ? truncate(message.message, 100) : 'No message'}</div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Add click event to each row
+            document.querySelectorAll('#messagesTableBody tr[data-id]').forEach(row => {
+                row.addEventListener('click', () => {
+                    const messageId = row.getAttribute('data-id');
+                    showMessageDetails(messageId);
+                });
+            });
+        }
+
+        // Show message details in modal
+        function showMessageDetails(messageId) {
+            const message = state.messages.find(msg => msg.id == messageId);
+            if (!message) return;
+
+            elements.modalBody.innerHTML = `
+                <div class="message-detail">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value">${message.name || 'Not provided'}</div>
+                </div>
+                <div class="message-detail">
+                    <div class="detail-label">Email</div>
+                    <div class="email-value">
+                        <div class="detail-value">${message.email || 'Not provided'}</div>
+                        ${message.email ? `<button class="copy-email" data-email="${message.email}">📋 Copy</button>` : ''}
+                    </div>
+                </div>
+                <div class="message-detail">
+                    <div class="detail-label">Subject</div>
+                    <div class="detail-value">${message.subject || 'No subject'}</div>
+                </div>
+                <div class="message-detail">
+                    <div class="detail-label">Message</div>
+                    <div class="detail-value">${message.message || 'No message content'}</div>
+                </div>
+                <div class="message-detail">
+                    <div class="detail-label">Received</div>
+                    <div class="detail-value">${message.created_at ? formatDate(message.created_at) : 'Unknown date'}</div>
+                </div>
+            `;
+
+            // Add click event to copy email button
+            const copyButton = elements.modalBody.querySelector('.copy-email');
+            if (copyButton) {
+                copyButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const email = copyButton.getAttribute('data-email');
+                    navigator.clipboard.writeText(email).then(() => {
+                        copyButton.textContent = '✓ Copied!';
+                        setTimeout(() => {
+                            copyButton.innerHTML = '📋 Copy';
+                        }, 2000);
+                    });
+                });
+            }
+
+            elements.messageModal.style.display = 'flex';
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const totalPages = Math.ceil(state.totalMessages / state.perPage);
+            const from = ((state.currentPage - 1) * state.perPage) + 1;
+            const to = Math.min(state.currentPage * state.perPage, state.totalMessages);
+
+            elements.paginationInfo.textContent = 
+                state.totalMessages > 0 
+                    ? `Showing ${from}-${to} of ${state.totalMessages} messages`
+                    : 'No messages found';
+
+            elements.prevButton.disabled = state.currentPage <= 1;
+            elements.nextButton.disabled = state.currentPage >= totalPages;
+        }
+
+        // Update loading state
+        function updateLoadingState() {
+            if (state.loading) {
+                elements.prevButton.disabled = true;
+                elements.nextButton.disabled = true;
+            } else {
+                updatePagination();
+            }
+        }
+
+        // Render error state
+        function renderError() {
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        Error loading messages. Please try again later.
+                    </td>
+                </tr>
+            `;
+            elements.paginationInfo.textContent = 'Error loading data';
+        }
+
+        // Helper function to truncate text
+        function truncate(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+    </script>
+</body>
+</html>
+<script>
+    axios.get('https://core.hisend.hunnovate.com/api/v1/projects/01jxjcax2h9jq7hk66th9ms351/auth/user?api_key=dev_OvFaf7sFv9Np5LMty7AAD9UR',{
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}` // Assuming you store the token in localStorage
+        }
+    })
+    .then(response => {
+        console.log('User data:', response.data);
+    }).catch(error => {
+        window.location.href = "https://www.powercityinternationalberkshireuk.com"
+    });
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', () => {
+        axios.post('https://core.hisend.hunnovate.com/api/v1/projects/01jxjcax2h9jq7hk66th9ms351/auth/logout?api_key=dev_OvFaf7sFv9Np5LMty7AAD9UR', {}, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}` // Assuming you store the token in sessionStorage
+            }
+        }).then(response => {
+            console.log('Logout successful:', response.data);
+            sessionStorage.removeItem('token'); // Clear the token
+            window.location.href = "https://www.powercityinternationalberkshireuk.com"; // Redirect to homepage
+        }).catch(error => {
+            console.error('Logout error:', error);
+            alert('Logout failed. Please try again.');
+        });
+    });
+</script>
